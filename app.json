@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "kiataker",
+    "slug": "kiataker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/Kiataker-Logo.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/Kiataker-Logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/Kiataker-Logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.m_umermalik.kiataker"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "129646a2-4aef-4023-be54-4bf6ed944f21"
+      }
+    }
+  }
+}
