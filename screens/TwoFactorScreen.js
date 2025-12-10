@@ -14,28 +14,64 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
+import { supabase } from "../supabase";
+
 
 const { width, height } = Dimensions.get("window");
+
+// Kare Red brand color
+const BRAND_RED = "#8B0000";
+
+// Your Netlify function
+const SEND_2FA_URL = "https://kiataker.netlify.app/.netlify/functions/send2fa";
 
 export default function TwoFactorScreen({ navigation, setIsVerified }) {
   const [inputCode, setInputCode] = useState("");
   const [storedCode, setStoredCode] = useState(null);
   const [storedUserId, setStoredUserId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [email, setEmail] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const code = await AsyncStorage.getItem("@2faCode");
         const userId = await AsyncStorage.getItem("@2faUserId");
+        const storedEmail = await AsyncStorage.getItem("@2faEmail");
+
         setStoredCode(code);
         setStoredUserId(userId);
+        setEmail(storedEmail);
       } catch (e) {
         console.log("Failed to load 2FA info:", e);
       }
     };
     loadData();
   }, []);
+
+
+
+  const goBackToLogin = async () => {
+  try {
+    await AsyncStorage.multiRemove([
+      "@2faCode",
+      "@2faUserId",
+      "@2faVerified",
+    ]);
+    
+    // Sign out of Supabase
+    await supabase.auth.signOut();
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Landing" }],
+    });
+  } catch (e) {
+    console.log("Go Back Error:", e);
+  }
+};
+
 
   const verifyCode = async () => {
     if (inputCode.length !== 6) {
@@ -66,12 +102,41 @@ export default function TwoFactorScreen({ navigation, setIsVerified }) {
     }
   };
 
-  const resendCode = () => {
-    Alert.alert("Resend", "Resend code feature coming soon...");
+  // ✅ Resend code logic
+  const resendCode = async () => {
+    if (!email) {
+      Alert.alert("Error", "Email not found. Please login again.");
+      return;
+    }
+
+    setResendLoading(true);
+    try {
+      const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      await AsyncStorage.setItem("@2faCode", newCode);
+      setStoredCode(newCode);
+
+      const response = await fetch(SEND_2FA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: newCode }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to resend verification code");
+      }
+
+      Alert.alert("Success", "New verification code sent to your email.");
+    } catch (err) {
+      console.log("RESEND ERROR:", err);
+      Alert.alert("Error", err.message || "Could not resend code.");
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   return (
-    <LinearGradient colors={['#6DD5FA', '#FFFFFF']} style={{ flex: 1 }}>
+    <LinearGradient colors={["#ffffff", "#ffffff"]} style={{ flex: 1 }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -108,12 +173,16 @@ export default function TwoFactorScreen({ navigation, setIsVerified }) {
               )}
             </TouchableOpacity>
 
-            {/* <TouchableOpacity
-              style={styles.resendButton}
-              onPress={resendCode}
-            >
-              <Text style={styles.resendText}>Resend Code</Text>
-            </TouchableOpacity> */}
+            {/* ✅ Resend Code Button */}
+           <TouchableOpacity
+  style={{ marginTop: 10 }}
+  onPress={goBackToLogin}
+>
+  <Text style={{ color: BRAND_RED, fontSize: 14 }}>
+    Didn’t receive email? Go back to login
+  </Text>
+</TouchableOpacity>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -140,7 +209,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#007bff",
+    color: BRAND_RED,
     textAlign: "center",
     marginBottom: 10,
   },
@@ -163,7 +232,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: "#007bff",
+    backgroundColor: BRAND_RED,
     paddingVertical: 15,
     borderRadius: 12,
     alignItems: "center",
@@ -178,11 +247,200 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   resendText: {
-    color: "#007bff",
+    color: BRAND_RED,
     fontSize: 16,
     fontWeight: "500",
   },
 });
+
+
+
+
+// import React, { useState, useEffect } from "react";
+// import {
+//   View,
+//   Text,
+//   TextInput,
+//   TouchableOpacity,
+//   StyleSheet,
+//   ActivityIndicator,
+//   Alert,
+//   ScrollView,
+//   KeyboardAvoidingView,
+//   Platform,
+//   Dimensions,
+// } from "react-native";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { LinearGradient } from "expo-linear-gradient";
+
+// const { width, height } = Dimensions.get("window");
+
+// export default function TwoFactorScreen({ navigation, setIsVerified }) {
+//   const [inputCode, setInputCode] = useState("");
+//   const [storedCode, setStoredCode] = useState(null);
+//   const [storedUserId, setStoredUserId] = useState(null);
+//   const [loading, setLoading] = useState(false);
+
+//   useEffect(() => {
+//     const loadData = async () => {
+//       try {
+//         const code = await AsyncStorage.getItem("@2faCode");
+//         const userId = await AsyncStorage.getItem("@2faUserId");
+//         setStoredCode(code);
+//         setStoredUserId(userId);
+//       } catch (e) {
+//         console.log("Failed to load 2FA info:", e);
+//       }
+//     };
+//     loadData();
+//   }, []);
+
+//   const verifyCode = async () => {
+//     if (inputCode.length !== 6) {
+//       Alert.alert("Invalid Code", "Please enter the 6-digit code sent to your email.");
+//       return;
+//     }
+
+//     setLoading(true);
+//     try {
+//       if (inputCode === storedCode) {
+//         await AsyncStorage.setItem("@2faVerified", "true");
+//         setIsVerified(true);
+//         await AsyncStorage.setItem("@loggedInUserId", storedUserId);
+//         await AsyncStorage.removeItem("@2faCode");
+//         await AsyncStorage.removeItem("@2faUserId");
+
+//         navigation.reset({
+//           index: 0,
+//           routes: [{ name: "Home" }],
+//         });
+//       } else {
+//         Alert.alert("Incorrect Code", "The verification code is incorrect.");
+//       }
+//     } catch (err) {
+//       Alert.alert("Error", err.message || "Something went wrong.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const resendCode = () => {
+//     Alert.alert("Resend", "Resend code feature coming soon...");
+//   };
+
+//   return (
+//     <LinearGradient colors={['#6DD5FA', '#FFFFFF']} style={{ flex: 1 }}>
+//       <KeyboardAvoidingView
+//         style={{ flex: 1 }}
+//         behavior={Platform.OS === "ios" ? "padding" : undefined}
+//       >
+//         <ScrollView
+//           contentContainerStyle={styles.container}
+//           keyboardShouldPersistTaps="handled"
+//         >
+//           <View style={styles.card}>
+//             <Text style={styles.title}>Verification Code</Text>
+//             <Text style={styles.subtitle}>
+//               Enter the 6-digit code sent to your email
+//             </Text>
+
+//             <TextInput
+//               style={styles.input}
+//               placeholder="Enter code"
+//               keyboardType="number-pad"
+//               maxLength={6}
+//               value={inputCode}
+//               onChangeText={setInputCode}
+//             />
+
+//             <TouchableOpacity
+//               style={styles.button}
+//               onPress={verifyCode}
+//               activeOpacity={0.8}
+//               disabled={loading}
+//             >
+//               {loading ? (
+//                 <ActivityIndicator color="#fff" />
+//               ) : (
+//                 <Text style={styles.buttonText}>Verify</Text>
+//               )}
+//             </TouchableOpacity>
+
+//             {/* <TouchableOpacity
+//               style={styles.resendButton}
+//               onPress={resendCode}
+//             >
+//               <Text style={styles.resendText}>Resend Code</Text>
+//             </TouchableOpacity> */}
+//           </View>
+//         </ScrollView>
+//       </KeyboardAvoidingView>
+//     </LinearGradient>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flexGrow: 1,
+//     justifyContent: "center",
+//     padding: 25,
+//   },
+//   card: {
+//     backgroundColor: "#fff",
+//     borderRadius: 15,
+//     padding: 20,
+//     shadowColor: "#000",
+//     shadowOpacity: 0.08,
+//     shadowRadius: 10,
+//     shadowOffset: { width: 0, height: 5 },
+//     elevation: 4,
+//   },
+//   title: {
+//     fontSize: 26,
+//     fontWeight: "bold",
+//     color: "#007bff",
+//     textAlign: "center",
+//     marginBottom: 10,
+//   },
+//   subtitle: {
+//     fontSize: 14,
+//     color: "#555",
+//     textAlign: "center",
+//     marginBottom: 25,
+//   },
+//   input: {
+//     height: 55,
+//     borderWidth: 1,
+//     borderColor: "#ccc",
+//     borderRadius: 12,
+//     paddingHorizontal: 20,
+//     fontSize: 18,
+//     textAlign: "center",
+//     letterSpacing: 5,
+//     backgroundColor: "#f7f9fc",
+//     marginBottom: 20,
+//   },
+//   button: {
+//     backgroundColor: "#007bff",
+//     paddingVertical: 15,
+//     borderRadius: 12,
+//     alignItems: "center",
+//   },
+//   buttonText: {
+//     color: "#fff",
+//     fontSize: 16,
+//     fontWeight: "bold",
+//   },
+//   resendButton: {
+//     marginTop: 15,
+//     alignItems: "center",
+//   },
+//   resendText: {
+//     color: "#007bff",
+//     fontSize: 16,
+//     fontWeight: "500",
+//   },
+// });
 
 
 
