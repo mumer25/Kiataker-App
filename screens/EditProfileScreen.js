@@ -7,9 +7,11 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Platform,
   Image,
   Animated,
   Alert,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { supabase } from '../supabase';
@@ -431,7 +433,8 @@ setCurrentMedication(meds);
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={["bottom","left","right"]}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
       {/* Top Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Edit Profile</Text>
@@ -490,7 +493,7 @@ setCurrentMedication(meds);
     </>
   )}
 </View>
-
+</KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -499,7 +502,7 @@ const styles = StyleSheet.create({
   header: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#ccc', backgroundColor: '#fff' },
   headerText: { fontSize: 20, fontWeight: 'bold', color: BRAND_RED, textAlign: 'center' },
   progressContainer: { height: 5, backgroundColor: '#eee', borderRadius: 3, marginTop: 10 },
-  progressBar: { height: 5, backgroundColor: BRAND_RED, borderRadius: 3 },
+  progressBar: { height: 6, backgroundColor: BRAND_RED, borderRadius: 3 },
   label: { marginBottom: 5, fontWeight: 'bold' },
   input: { width: '100%', borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 10 },
   photoContainer: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' },
