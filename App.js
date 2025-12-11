@@ -14,6 +14,9 @@ import SickVisitScreen from "./screens/SickVisitScreen";
 import MedicationRefillScreen from "./screens/MedicationRefillScreen";
 import STDExposureScreen from "./screens/STDExposureScreen";
 import EmergencyScreen from "./screens/EmergencyScreen";
+import EditProfileScreen from "./screens/EditProfileScreen";
+import ProfileHistoryScreen from "./screens/ProfileHistoryScreen";
+import ProfileScreen from "./screens/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -92,10 +95,15 @@ export default function App() {
   {userSession && isVerified && <Stack.Screen name="Home" component={HomeScreen} />}
 
   {/* Bottom tabs/screens accessible for all users */}
-  <Stack.Screen name="SickVisit" component={SickVisitScreen} />
-  <Stack.Screen name="MedicationRefill" component={MedicationRefillScreen} />
-  <Stack.Screen name="STDExposure" component={STDExposureScreen} />
-  <Stack.Screen name="Emergency" component={EmergencyScreen} />
+  <Stack.Screen name="SickVisit" component={SickVisitScreen} options={{ headerShown: true}} />
+  <Stack.Screen name="MedicationRefill" component={MedicationRefillScreen} options={{ headerShown: true}} />
+  <Stack.Screen name="STDExposure" component={STDExposureScreen} options={{ headerShown: true}} />
+  <Stack.Screen name="Emergency" component={EmergencyScreen} options={{ headerShown: true}} />
+
+  <Stack.Screen name="Edit Profile" component={EditProfileScreen} options={{ headerShown: true}}/>
+  <Stack.Screen name="Profile History" component={ProfileHistoryScreen} options={{ headerShown: true}} />
+  <Stack.Screen name="Profile" component={ProfileScreen} />
+
 </Stack.Navigator>
     </NavigationContainer>
   );

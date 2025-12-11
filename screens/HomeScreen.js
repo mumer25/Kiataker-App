@@ -1,3 +1,4 @@
+// Updated 11-12-2025
 // screens/HomeScreen.js
 import React, { useEffect, useState } from 'react';
 import {
@@ -9,12 +10,15 @@ import {
   ScrollView,
   Dimensions,
   Image,
+  Animated,
+  Easing,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../supabase';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import ProfileScreen from './ProfileScreen';
 
 
 const { width } = Dimensions.get('window');
@@ -27,12 +31,16 @@ const tabs = [
   { title: "Medication", icon: "pill", screen: "MedicationRefill" },
   { title: "STD Exposure", icon: "alert-circle-outline", screen: "STDExposure" },
   { title: "Emergency", icon: "ambulance", screen: "Emergency" },
+
 ];
 
 export default function HomeScreen({ navigation }) {
   const [firstName, setFirstName] = useState('User');
   const [lastName, setLastName] = useState('');
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+const slideAnim = useState(new Animated.Value(-width))[0]; // hidden on the left
+
 
    const iconSize = width > 400 ? 42 : 36;
   const tabCardWidth = width > 350 ? "48%" : "100%";
@@ -75,29 +83,60 @@ export default function HomeScreen({ navigation }) {
     navigation.replace('Landing');
   };
 
+  const openProfile = () => {
+  setIsProfileOpen(true);
+  Animated.timing(slideAnim, {
+    toValue: 0, // fully visible
+    duration: 300,
+    useNativeDriver: false,
+    easing: Easing.out(Easing.ease),
+  }).start();
+};
+
+const closeProfile = () => {
+  Animated.timing(slideAnim, {
+    toValue: -width, // slide out
+    duration: 300,
+    useNativeDriver: false,
+    easing: Easing.in(Easing.ease),
+  }).start(() => setIsProfileOpen(false));
+};
+
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F7FAFD" />
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} scrollEnabled={!isProfileOpen}>
         {/* ===== HEADER ===== */}
         <View style={styles.header}>
           <View style={styles.profileBox}>
-            {profilePhoto ? (
+            {/* {profilePhoto ? (
               <Image source={{ uri: profilePhoto }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatar}>
                 <MaterialIcons name="person" size={28} color="#1565C0" />
               </View>
-            )}
+            )} */}
+          <TouchableOpacity onPress={openProfile}>
+  {profilePhoto ? (
+    <Image source={{ uri: profilePhoto }} style={styles.avatarImage} />
+  ) : (
+    <View style={styles.avatar}>
+      <MaterialIcons name="person" size={28} color="#1565C0" />
+    </View>
+  )}
+</TouchableOpacity>
+
+
             <View>
               <Text style={styles.welcomeTxt}>Welcome</Text>
               <Text style={styles.nameTxt}>{firstName}</Text>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.logoutTab} onPress={logout}>
+          {/* <TouchableOpacity style={styles.logoutTab} onPress={logout}>
             <MaterialIcons name="logout" size={22} color="#D32F2F" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* ===== MAIN AI CARD ===== */}
@@ -130,6 +169,33 @@ export default function HomeScreen({ navigation }) {
                 ))}
               </View>
       </ScrollView>
+
+     {/* Sidebar */}
+{isProfileOpen && (
+  <Animated.View
+    style={{
+      position: "absolute",
+      top: 0,
+      left: slideAnim,
+      width: "75%",
+      height: "100%",
+      backgroundColor: "#0a84ff",
+      zIndex: 999,
+      shadowColor: "#000",
+      shadowOffset: { width: 2, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 5,
+      elevation: 5,
+    }}
+  >
+    <ProfileScreen
+      navigation={navigation}
+      isSidebar={true}
+      onClose={closeProfile}
+    />
+  </Animated.View>
+)}
+
     </SafeAreaView>
   );
 }

@@ -20,6 +20,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const BRAND_RED = '#8B0000';
 const totalSteps = 4;
@@ -52,7 +53,8 @@ const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Step 2 - Medical Info
   const [primary_care, setPrimaryCare] = useState('');
-  const [current_medication, setCurrentMedication] = useState('');
+  const [current_medication_input, setCurrentMedicationInput] = useState('');
+  const [current_medication, setCurrentMedication] = useState([]);
   const [allergies, setAllergies] = useState('');
   const [pharmacy, setPharmacy] = useState('');
   const [fax, setFax] = useState('');
@@ -153,6 +155,16 @@ const onDobChange = (event, selectedDate) => {
         alert('Please fill all required fields in Patient Information.');
         return;
       }
+       if (!profile_photo) {
+      alert('Please upload a profile photo.');
+      return;
+    }
+        // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
       if (password !== confirmPassword) {
         alert('Passwords do not match.');
         return;
@@ -252,6 +264,21 @@ const onDobChange = (event, selectedDate) => {
     }
   };
 
+  //------------- Medication Handling --------------
+
+    const addMedication = () => {
+  if (!current_medication_input.trim()) return;
+
+  setCurrentMedication([...current_medication, current_medication_input.trim()]);
+  setCurrentMedicationInput('');
+};
+
+const deleteMedication = (index) => {
+  const updatedList = [...current_medication];
+  updatedList.splice(index, 1);
+  setCurrentMedication(updatedList);
+};
+
   // ---------------- Render Steps ----------------
   const renderStep = () => {
     switch (step) {
@@ -266,10 +293,13 @@ const onDobChange = (event, selectedDate) => {
               )}
             </TouchableOpacity>
 
+      <Text style={styles.label}>First Name</Text>
             <TextInput placeholder="First Name" value={first_name} onChangeText={setFirstName} style={styles.input} />
+      <Text style={styles.label}>Last Name</Text>
             <TextInput placeholder="Last Name" value={last_name} onChangeText={setLastName} style={styles.input} />
+      <Text style={styles.label}>Middle Initial</Text>
             <TextInput placeholder="Middle Initial" value={middle_initial} onChangeText={setMiddleInitial} style={styles.input} />
-            {/* <TextInput placeholder="Date of Birth" value={dob} onChangeText={setDob} style={styles.input} /> */}
+      <Text style={styles.label}>Date of Birth</Text>
 <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
   <Text style={{ color: dob ? '#000' : '#888' }}>{dob || 'Date of Birth'}</Text>
 </TouchableOpacity>
@@ -283,7 +313,7 @@ const onDobChange = (event, selectedDate) => {
     maximumDate={new Date()} // prevent future dates
   />
 )}
-
+      <Text style={styles.label}>Gender</Text>
             <View style={[styles.input, styles.pickerContainer]}>
               <Picker selectedValue={gender} onValueChange={setGender} style={{ height: 50, width: '100%' }}>
                 <Picker.Item label="Male" value="Male" />
@@ -292,14 +322,22 @@ const onDobChange = (event, selectedDate) => {
               </Picker>
             </View>
 
+      <Text style={styles.label}>Race</Text>
             <TextInput placeholder="Race" value={race} onChangeText={setRace} style={styles.input} />
+      <Text style={styles.label}>Address</Text>
             <TextInput placeholder="Address" value={address} onChangeText={setAddress} style={styles.input} />
+      <Text style={styles.label}>City</Text>
             <TextInput placeholder="City" value={city} onChangeText={setCity} style={styles.input} />
+      <Text style={styles.label}>State</Text>
             <TextInput placeholder="State" value={state} onChangeText={setStateField} style={styles.input} />
+      <Text style={styles.label}>Zip</Text>
             <TextInput placeholder="Zip" value={zip} onChangeText={setZip} style={styles.input} />
+      <Text style={styles.label}>Email</Text>
             <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} keyboardType="email-address" autoCapitalize="none" />
+      <Text style={styles.label}>Cell Phone</Text>
             <TextInput placeholder="Cell Phone" value={phone} onChangeText={setPhone} style={styles.input} keyboardType="phone-pad" />
-
+     
+      <Text style={styles.label}>Password</Text>
             <View style={{ position: 'relative', width: '100%' }}>
               <TextInput placeholder="Password" value={password} onChangeText={setPassword} style={styles.input} secureTextEntry={!showPassword} />
               <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
@@ -307,6 +345,7 @@ const onDobChange = (event, selectedDate) => {
               </TouchableOpacity>
             </View>
 
+      <Text style={styles.label}>Confirm Password</Text>
             <View style={{ position: 'relative', width: '100%' }}>
               <TextInput placeholder="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} style={styles.input} secureTextEntry={!showConfirmPassword} />
               <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
@@ -317,25 +356,115 @@ const onDobChange = (event, selectedDate) => {
         );
 
       case 2:
-        return (
-          <>
-            <Text style={styles.sectionTitle}>Medical Information</Text>
-            <TextInput placeholder="Primary Care Provider" value={primary_care} onChangeText={setPrimaryCare} style={styles.input} />
-            <TextInput placeholder="Current Medication" value={current_medication} onChangeText={setCurrentMedication} style={styles.input} />
-            <TextInput placeholder="Medication Allergies" value={allergies} onChangeText={setAllergies} style={styles.input} />
-            <TextInput placeholder="Preferred Pharmacy & Address" value={pharmacy} onChangeText={setPharmacy} style={styles.input} />
-            <TextInput placeholder="Fax" value={fax} onChangeText={setFax} style={styles.input} />
-          </>
-        );
+  return (
+    <>
+      <Text style={styles.sectionTitle}>Medical Information</Text>
+
+      {/* Primary Care Provider */}
+      <Text style={styles.label}>Primary Care Provider</Text>
+      <TextInput
+        value={primary_care}
+        onChangeText={setPrimaryCare}
+        style={styles.input}
+        placeholder="Enter provider name"
+      />
+
+      {/* Add Medication */}
+      <Text style={styles.label}>Current Medications</Text>
+      <View style={{ width: "100%", flexDirection: "row", alignItems: "center" }}>
+        <TextInput
+          placeholder="Add Medication"
+          value={current_medication_input}
+          onChangeText={setCurrentMedicationInput}
+          style={[styles.input, { flex: 1 }]}
+        />
+
+        <TouchableOpacity
+          onPress={addMedication}
+          style={{
+            backgroundColor: BRAND_RED,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+            marginLeft: 8,
+            marginBottom:12,
+            borderRadius: 8
+          }}
+        >
+          <MaterialIcons name="add" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Medication List */}
+      {current_medication.length > 0 && (
+        <View style={{ width: "100%", marginTop: 10 }}>
+          {current_medication.map((item, index) => (
+            <View
+              key={index}
+              style={{
+                padding: 12,
+                backgroundColor: "#f0f0f0",
+                borderRadius: 8,
+                marginBottom: 6,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <Text style={{ fontSize: 16 }}>{item}</Text>
+
+              {/* ❌ Delete icon */}
+              <TouchableOpacity onPress={() => deleteMedication(index)}>
+                <MaterialIcons name="close" size={24} color="red" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Allergies */}
+      <Text style={styles.label}>Medication Allergies</Text>
+      <TextInput
+        placeholder="Enter allergies"
+        value={allergies}
+        onChangeText={setAllergies}
+        style={styles.input}
+      />
+
+      {/* Pharmacy */}
+      <Text style={styles.label}>Preferred Pharmacy & Address</Text>
+      <TextInput
+        placeholder="Enter details"
+        value={pharmacy}
+        onChangeText={setPharmacy}
+        style={styles.input}
+      />
+
+      {/* FAX */}
+      <Text style={styles.label}>Fax Number</Text>
+      <TextInput
+        placeholder="Enter fax number"
+        value={fax}
+        onChangeText={setFax}
+        style={styles.input}
+      />
+    </>
+  );
+
 
       case 3:
         return (
           <>
             <Text style={styles.sectionTitle}>Party Responsible for Charges</Text>
+
+      <Text style={styles.label}>Bill To</Text>
             <TextInput placeholder="Bill To" value={billto} onChangeText={setBillto} style={styles.input} />
+      <Text style={styles.label}>Relationship</Text>
             <TextInput placeholder="Relationship" value={relationship} onChangeText={setRelationship} style={styles.input} />
+      <Text style={styles.label}>Address</Text>
             <TextInput placeholder="Address" value={responsible_address} onChangeText={setResponsibleAddress} style={styles.input} />
+      <Text style={styles.label}>Phone</Text>
             <TextInput placeholder="Phone" value={responsible_phone} onChangeText={setResponsiblePhone} style={styles.input} />
+      <Text style={styles.label}>City/State/Zip</Text>
             <TextInput placeholder="City/State/Zip" value={citystatezip} onChangeText={setCityStateZip} style={styles.input} />
           </>
         );
@@ -375,7 +504,14 @@ const onDobChange = (event, selectedDate) => {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
         <LinearGradient colors={['#ffffff', '#ffffff']} style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            {/* <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}> */}
+                <KeyboardAwareScrollView
+          contentContainerStyle={styles.container}
+          enableOnAndroid={true}
+          extraScrollHeight={30}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
               <Text style={styles.mainTitle}>Create Account</Text>
 
               {/* Progress Bar */}
@@ -387,7 +523,8 @@ const onDobChange = (event, selectedDate) => {
               <Animated.View style={{ opacity: fadeAnim, width: '100%', alignItems: 'center' }}>
                 {renderStep()}
               </Animated.View>
-            </ScrollView>
+            {/* </ScrollView> */}
+             </KeyboardAwareScrollView>
 
             {/* Fixed Bottom Buttons */}
             <View style={styles.navButtons}>
@@ -421,6 +558,14 @@ const styles = StyleSheet.create({
   progressText: { position: 'absolute', top: 12, right: 0, fontSize: 12, color: '#555' },
   sectionTitle: { fontSize: 20, fontWeight: '700', marginBottom: 10, width: '100%' },
   input: { width: '100%', borderWidth: 1, borderColor: '#ccc', borderRadius: 12, padding: Platform.OS === 'ios' ? 15 : 12, marginBottom: 12, backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+  label: {
+  width: "100%",
+  fontSize: 15,
+  fontWeight: "600",
+  marginBottom: 4,
+  marginTop: 12,
+  color: "gray"
+},
   pickerContainer: { justifyContent: 'center', height: 50 },
   eyeIcon: { position: 'absolute', right: 12, top: Platform.OS === 'ios' ? 18 : 15 },
   photoContainer: { width: 120, height: 120, borderRadius: 60, borderWidth: 2, borderColor: BRAND_RED, marginBottom: 20, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
