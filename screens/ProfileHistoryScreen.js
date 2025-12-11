@@ -4,6 +4,9 @@ import { supabase } from '../supabase';
 
 const { width } = Dimensions.get('window');
 const BRAND_RED = '#8B0000';
+const LIGHT_GREEN = '#ccfbc7ff';
+const LIGHT_GRAY = '#f0f0f0';
+const LIGHT_RED = '#ffe5e5';
 
 export default function ProfileHistoryScreen() {
   const [history, setHistory] = useState([]);
@@ -21,23 +24,17 @@ export default function ProfileHistoryScreen() {
     else setHistory(data);
   };
 
-  // Utility to format values (arrays, JSON strings, or plain strings)
+  // Format values (arrays, JSON strings, or plain strings)
   const formatValue = (val) => {
     if (!val) return '—';
-
     if (Array.isArray(val)) return val.join(', ');
-
     if (typeof val === 'string') {
-      // Try parsing JSON string
       try {
         const parsed = JSON.parse(val);
         if (Array.isArray(parsed)) return parsed.join(', ');
-      } catch (err) {
-        // fallback: maybe comma-separated string already
-        return val.split(',').map((v) => v.trim()).join(', ');
-      }
+      } catch {}
+      return val.split(',').map(v => v.trim()).join(', ');
     }
-
     return val.toString();
   };
 
@@ -51,19 +48,28 @@ export default function ProfileHistoryScreen() {
 
       {history.map((item) => (
         <View key={item.id} style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Changes Made</Text>
+            <Text style={styles.date}>{new Date(item.changed_at).toLocaleString()}</Text>
+          </View>
+
           {Object.entries(item.changes).map(([field, change]) => (
             <View key={field} style={styles.changeRow}>
-              <Text style={styles.field}>{field}</Text>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.field}>{field}</Text>
+              </View>
+
               <View style={styles.valuesContainer}>
-                <Text style={styles.oldValue}>{formatValue(change.old)}</Text>
-                <Text style={styles.arrow}> to </Text>
-                <Text style={styles.newValue}>{formatValue(change.new)}</Text>
+                <View style={styles.oldValueContainer}>
+                  <Text style={styles.oldValue}>{formatValue(change.old)}</Text>
+                </View>
+                <Text style={styles.arrow}>to</Text>
+                <View style={styles.newValueContainer}>
+                  <Text style={styles.newValue}>{formatValue(change.new)}</Text>
+                </View>
               </View>
             </View>
           ))}
-          <Text style={styles.date}>
-            {new Date(item.changed_at).toLocaleString()}
-          </Text>
         </View>
       ))}
     </ScrollView>
@@ -77,11 +83,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   header: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: BRAND_RED,
     textAlign: 'center',
-    marginVertical: 15,
+    marginVertical: 20,
   },
   noDataText: {
     textAlign: 'center',
@@ -91,57 +97,77 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
-    padding: 20,
     borderRadius: 15,
     marginBottom: 15,
+    padding: 18,
     shadowColor: '#000',
     shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
   },
   changeRow: {
     marginBottom: 12,
   },
+  fieldContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 6,
+  },
   field: {
     fontWeight: '600',
-    fontSize: 15,
-    color: '#555',
-    marginBottom: 5,
+    fontSize: 14,
+    color: BRAND_RED,
   },
   valuesContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  oldValue: {
+  oldValueContainer: {
     flex: 1,
+    backgroundColor: LIGHT_GRAY,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginRight: 6,
+  },
+  oldValue: {
     fontSize: 14,
-    color: '#999',
-    backgroundColor: '#f0f0f0',
-    padding: 6,
-    borderRadius: 6,
-    textAlign: 'center',
+    color: '#666',
   },
   arrow: {
     fontSize: 16,
     color: BRAND_RED,
-    marginHorizontal: 6,
     fontWeight: 'bold',
   },
-  newValue: {
+  newValueContainer: {
     flex: 1,
+    backgroundColor: LIGHT_GREEN,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginLeft: 6,
+  },
+  newValue: {
     fontSize: 14,
+    // color: BRAND_RED,
     fontWeight: '600',
-    color: BRAND_RED,
-    backgroundColor: '#ffe5e5',
-    padding: 6,
-    borderRadius: 6,
-    textAlign: 'center',
   },
   date: {
     fontSize: 12,
     color: '#999',
-    marginTop: 10,
-    textAlign: 'right',
+    alignSelf: 'flex-end',
   },
 });

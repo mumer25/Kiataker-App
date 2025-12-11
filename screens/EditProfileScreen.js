@@ -205,81 +205,115 @@ setCurrentMedication(meds);
   };
 
   // ---------------- Update Profile & Store History ----------------
-  const updateProfile = async () => {
-    if (!first_name || !last_name || !email) return alert('Fill all required fields');
-    if (password && password !== confirmPassword) return alert('Passwords do not match');
+ const updateProfile = async () => {
+  if (!first_name || !last_name || !email) return alert('Fill all required fields');
+  if (password && password !== confirmPassword) return alert('Passwords do not match');
 
-    setLoading(true);
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not found');
+  setLoading(true);
 
-      // Fetch current profile to store changes
-      const { data: currentProfile } = await supabase.from('users').select('*').eq('id', user.id).single();
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not found');
 
-      const formattedDob = dobDate
-        ? `${dobDate.getFullYear()}-${String(dobDate.getMonth() + 1).padStart(2, '0')}-${String(dobDate.getDate()).padStart(2, '0')}`
-        : null;
+    // Fetch current profile
+    const { data: currentProfile, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
 
-      // Prepare changes
-      const newProfileData = {
-        profile_photo,
-        first_name,
-        last_name,
-        middle_initial,
-        dob: formattedDob,
-        gender,
-        race,
-        address,
-        city,
-        state,
-        zip,
-        email,
-        phone,
-        primary_care,
-        current_medication,
-        allergies,
-        pharmacy,
-        fax,
-        billto,
-        relationship,
-        responsible_address,
-        responsible_phone,
-        citystatezip,
-        consentgiven,
-      };
+    if (fetchError) throw fetchError;
 
-      const changes = {};
-      Object.keys(newProfileData).forEach((key) => {
-        const oldVal = currentProfile[key];
-        const newVal = newProfileData[key];
-        if (Array.isArray(oldVal) && Array.isArray(newVal)) {
-          if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) changes[key] = { old: oldVal.join(', '), new: newVal.join(', ') };
-        } else if (oldVal !== newVal) changes[key] = { old: oldVal, new: newVal };
-      });
-
-      if (Object.keys(changes).length > 0) {
-        await supabase.from('profile_changes_history').insert([{ user_id: user.id, changes, changed_at: new Date() }]);
+    // Normalize arrays / strings for comparison
+    const normalizeArray = (val) => {
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) return parsed;
+        } catch {}
+        return val.split(',').map((v) => v.trim());
       }
+      return [val];
+    };
 
-      if (password) {
-        const { error: passError } = await supabase.auth.updateUser({ password });
-        if (passError) throw passError;
+    const formattedDob = dobDate
+      ? `${dobDate.getFullYear()}-${String(dobDate.getMonth() + 1).padStart(2, '0')}-${String(dobDate.getDate()).padStart(2, '0')}`
+      : null;
+
+    const newProfileData = {
+      profile_photo,
+      first_name,
+      last_name,
+      middle_initial,
+      dob: formattedDob,
+      gender,
+      race,
+      address,
+      city,
+      state,
+      zip,
+      email,
+      phone,
+      primary_care,
+      current_medication,
+      allergies,
+      pharmacy,
+      fax,
+      billto,
+      relationship,
+      responsible_address,
+      responsible_phone,
+      citystatezip,
+      consentgiven,
+    };
+
+    const changes = {};
+
+    Object.keys(newProfileData).forEach((key) => {
+      let oldVal = currentProfile[key];
+      let newVal = newProfileData[key];
+
+      // Compare arrays properly
+      if (Array.isArray(newVal) || typeof oldVal === 'string') {
+        oldVal = normalizeArray(oldVal);
+        newVal = normalizeArray(newVal);
+        if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+          changes[key] = { old: oldVal.join(', '), new: newVal.join(', ') };
+        }
+      } else if (oldVal !== newVal) {
+        changes[key] = { old: oldVal, new: newVal };
       }
+    });
 
-      const { error } = await supabase.from('users').update(newProfileData).eq('id', user.id);
-      if (error) throw error;
-
-      Alert.alert('Success', 'Profile updated successfully!');
-    } catch (err) {
-      console.log(err);
-      alert(err.message || 'Update failed');
-    } finally {
-      setLoading(false);
+    // Insert change history only if actual changes exist
+    if (Object.keys(changes).length > 0) {
+      await supabase
+        .from('profile_changes_history')
+        .insert([{ user_id: user.id, changes, changed_at: new Date() }]);
     }
-  };
+
+    // Update password if provided
+    if (password) {
+      const { error: passError } = await supabase.auth.updateUser({ password });
+      if (passError) throw passError;
+    }
+
+    // Update profile
+    const { error } = await supabase.from('users').update(newProfileData).eq('id', user.id);
+    if (error) throw error;
+
+    Alert.alert('Success', 'Profile updated successfully!');
+  } catch (err) {
+    console.log(err);
+    alert(err.message || 'Update failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   // ---------------- Render Steps ----------------
