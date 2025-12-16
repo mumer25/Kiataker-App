@@ -95,9 +95,9 @@ export default function App() {
   {userSession && isVerified && <Stack.Screen name="Home" component={HomeScreen} />}
 
   {/* Bottom tabs/screens accessible for all users */}
-  <Stack.Screen name="SickVisit" component={SickVisitScreen} options={{ headerShown: true}} />
-  <Stack.Screen name="MedicationRefill" component={MedicationRefillScreen} options={{ headerShown: true}} />
-  <Stack.Screen name="STDExposure" component={STDExposureScreen} options={{ headerShown: true}} />
+  <Stack.Screen name="Sick Visit" component={SickVisitScreen} options={{ headerShown: true}} />
+  <Stack.Screen name="Medication Refill" component={MedicationRefillScreen} options={{ headerShown: true}} />
+  <Stack.Screen name="STD Exposure" component={STDExposureScreen} options={{ headerShown: true}} />
   <Stack.Screen name="Emergency" component={EmergencyScreen} options={{ headerShown: true}} />
 
   <Stack.Screen name="Edit Profile" component={EditProfileScreen} options={{ headerShown: true}}/>

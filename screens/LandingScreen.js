@@ -15,9 +15,9 @@ const BRAND_RED = "#8B0000";
 
 // Tab data array
 const tabs = [
-  { title: "Sick Visit", icon: "stethoscope", screen: "SickVisit" },
-  { title: "Medication", icon: "pill", screen: "MedicationRefill" },
-  { title: "STD Exposure", icon: "alert-circle-outline", screen: "STDExposure" },
+  { title: "Sick Visit", icon: "stethoscope", screen: "Sick Visit" },
+  { title: "Medication", icon: "pill", screen: "Medication Refill" },
+  { title: "STD Exposure", icon: "alert-circle-outline", screen: "STD Exposure" },
   { title: "Emergency", icon: "ambulance", screen: "Emergency" },
 ];
 
