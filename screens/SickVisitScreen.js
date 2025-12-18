@@ -25,7 +25,7 @@ export default function SickVisitScreen() {
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
       <Text style={styles.header}>Sick Visit</Text>
       <Text style={styles.subText}>
-        Get personalized guidance for common illnesses and medication management.
+        Get personalized science-backed clinical treatment for common illnesses.
       </Text>
 
       {sortedSickVisitItems.map((item, index) => (

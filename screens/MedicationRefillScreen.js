@@ -25,7 +25,7 @@ export default function MedicationRefillScreen() {
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
       <Text style={styles.header}>Medication Refill</Text>
       <Text style={styles.subText}>
-        Get recommendations and request refills for your current prescriptions safely and efficiently.
+        Get recommendations and request medication refills for your current prescriptions.
       </Text>
 
       {sortedMedications.map((item, index) => (

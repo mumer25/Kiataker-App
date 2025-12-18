@@ -142,7 +142,7 @@ const closeProfile = () => {
         <View style={styles.mainCard}>
           <Text style={styles.mainTitle}>AI Clinical Assistant</Text>
           <Text style={styles.mainSub}>
-            Smart AI-powered disease detection and treatment insights.
+            Medical excellence rooted in advanced clinical treatment.
           </Text>
 
           <TouchableOpacity style={styles.mainBtn}>
