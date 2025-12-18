@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  Platform,
   TextInput,
   ActivityIndicator,
 } from 'react-native';
@@ -243,13 +244,12 @@ export default function STDExposureScreen() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
           
           {/* HISTORY VIEW - RESTORED FULL LAYOUT */}
-{/* HISTORY VIEW - UPDATED WITH TIME */}
+{/* HISTORY VIEW - UPDATED WITH ARCHIVE TEXT */}
 {stage === STAGES.HISTORY && (
   <View>
     <Text style={styles.title}>History</Text>
     <Text style={styles.subtitle}>Previous visit records</Text>
     {history.map((item) => {
-      // Create a date object to extract time
       const dateObj = new Date(item.created_at);
       const timeStr = dateObj.toLocaleTimeString([], { 
         hour: '2-digit', 
@@ -274,12 +274,14 @@ export default function STDExposureScreen() {
             <Text style={styles.smallLabel} numberOfLines={1}>{item.pharmacy_sent}</Text>
           </View>
 
-          {/* RIGHT SIDE: Time and Icon */}
+          {/* RIGHT SIDE: Time, Icon, and Archive Text */}
           <View style={styles.historyRightSide}>
             <Text style={styles.historyTime}>{timeStr}</Text>
             <View style={styles.statusBadge}>
               <MaterialIcons name="receipt" size={20} color={BRAND_BLUE} />
             </View>
+            {/* NEW: Archive text on bottom right */}
+            <Text style={styles.archiveLabel}>Archived</Text> 
           </View>
         </TouchableOpacity>
       );
@@ -543,24 +545,41 @@ const styles = StyleSheet.create({
   modalTitle: { fontWeight: 'bold', fontSize: 18, marginBottom: 10 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' },
   smallLabel: { fontSize: 12, fontWeight: 'bold', color: BRAND_BLUE },
-  // ... other styles
-  historyRightSide: {
+historyRightSide: {
     alignItems: 'flex-end',
     justifyContent: 'center',
+    position: 'relative',
+    paddingBottom: 10, // Creates a small buffer for the absolute text
   },
   historyTime: {
-    fontSize: 12,
-    color: '#718096', // Subtle gray color
+    fontSize: 11,
+    color: '#94a3b8', // Softer blue-gray
     marginBottom: 4,
-    fontWeight: '500'
+    fontWeight: '600',
+    // Using a monospaced font for time looks very "medical record" professional
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', 
   },
   statusBadge: {
-    // Keep your existing badge style or use this
     padding: 4,
-    backgroundColor: '#ebf8ff',
-    borderRadius: 6,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 4,
+  },
+  archiveLabel: {
+    position: 'absolute',
+    bottom: -5,
+    right: 0,
+    fontSize: 8,
+    color: '#94a3b8',
+    fontWeight: 'bold',
+    letterSpacing: 0.6, // Increases professional look
+    textTransform: 'uppercase', // Uppercase with spacing is a classic professional UI pattern
+    fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-Medium' : 'sans-serif-medium',
   },
 });
+
+
+
+
 
 
 // import React, { useState, useEffect } from 'react';
