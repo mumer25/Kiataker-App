@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flexGrow: 1,
   },
-  closeBtn: { position: "absolute", top: 30, right: 20, zIndex: 10 },
+  closeBtn: { position: "absolute", top: 20, right: 20, zIndex: 10 },
   closeText: { fontSize: 24, color: "#333" },
   header: { alignItems: "center", marginBottom: 40 },
   avatar: { width: 100, height: 100, borderRadius: 50, marginBottom: 12 },
