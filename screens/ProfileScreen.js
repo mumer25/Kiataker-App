@@ -61,6 +61,7 @@ export default function ProfileScreen({ navigation, isSidebar = false, onClose }
         styles.container,
         { width: isSidebar ? width * 0.75 : "100%" },
       ]}
+      
     >
       {/* Close button for sidebar */}
       {isSidebar && onClose && (
@@ -118,8 +119,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flexGrow: 1,
   },
-  closeBtn: { position: "absolute", top: 20, right: 20, zIndex: 10 },
-  closeText: { fontSize: 24, color: "#333" },
+  closeBtn: { position: "absolute", top: 40, right: 20, zIndex: 10 },
+  closeText: { fontSize: 30, color: "#333" },
   header: { alignItems: "center", marginBottom: 40 },
   avatar: { width: 100, height: 100, borderRadius: 50, marginBottom: 12 },
   avatarPlaceholder: {

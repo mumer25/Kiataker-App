@@ -170,7 +170,32 @@ const closeProfile = () => {
       </ScrollView>
 
      {/* Sidebar */}
-{isProfileOpen && (
+     {isProfileOpen && (
+  <Animated.View
+    style={{
+      position: "absolute",
+      top: 0,
+      left: slideAnim,
+      width: width * 0.75, // 75% width
+      height: Dimensions.get('screen').height,
+      backgroundColor: "#0a84ff",
+      zIndex: 999,
+      shadowColor: "#000",
+      shadowOffset: { width: 2, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 5,
+      elevation: 5,
+    }}
+  >
+    <ProfileScreen
+      navigation={navigation}
+      isSidebar={true}
+      onClose={closeProfile}
+    />
+  </Animated.View>
+)}
+
+{/* {isProfileOpen && (
   <Animated.View
     style={{
       position: "absolute",
@@ -193,7 +218,7 @@ const closeProfile = () => {
       onClose={closeProfile}
     />
   </Animated.View>
-)}
+)} */}
 
     </SafeAreaView>
   );

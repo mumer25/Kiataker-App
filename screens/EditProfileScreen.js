@@ -36,6 +36,7 @@ export default function EditProfileScreen({ navigation }) {
   const [dob, setDob] = useState('');
   const [dobDate, setDobDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showGenderPicker, setShowGenderPicker] = useState(false);
   const [gender, setGender] = useState('Male');
   const [race, setRace] = useState('');
   const [address, setAddress] = useState('');
@@ -343,14 +344,65 @@ setCurrentMedication(meds);
             </TouchableOpacity>
             {showDatePicker && <DateTimePicker value={dobDate} mode="date" display="default" onChange={onDobChange} maximumDate={new Date()} />}
 
-            <Text style={styles.label}>Gender</Text>
+            {/* <Text style={styles.label}>Gender</Text>
             <View style={[styles.input, styles.pickerContainer]}>
               <Picker selectedValue={gender} onValueChange={setGender} style={{ height: 50, width: '100%' }} enabled={false}>
                 <Picker.Item label="Male" value="Male" />
                 <Picker.Item label="Female" value="Female" />
                 <Picker.Item label="Other" value="Other" />
               </Picker>
-            </View>
+            </View> */}
+
+            <Text style={styles.label}>Gender</Text>
+
+{Platform.OS === 'ios' ? (
+  <>
+    <TouchableOpacity
+      onPress={() => setShowGenderPicker(!showGenderPicker)}
+      style={styles.input}
+    >
+      <Text>{gender || 'Select Gender'}</Text>
+    </TouchableOpacity>
+
+    {showGenderPicker && (
+      <View style={{
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        width: '100%',
+        backgroundColor: '#fff',
+        marginTop: 4,
+        overflow: 'hidden'
+      }}>
+        <Picker
+          selectedValue={gender}
+          onValueChange={(itemValue) => {
+            setGender(itemValue);
+            setShowGenderPicker(false); // hide after selection
+          }}
+          style={{ width: '100%' }}
+        >
+          <Picker.Item label="Male" value="Male" />
+          <Picker.Item label="Female" value="Female" />
+          <Picker.Item label="Other" value="Other" />
+        </Picker>
+      </View>
+    )}
+  </>
+) : (
+  <View style={[styles.input, styles.pickerContainer]}>
+    <Picker
+      selectedValue={gender}
+      onValueChange={setGender}
+      style={{ height: 50, width: '100%' }}
+    >
+      <Picker.Item label="Male" value="Male" />
+      <Picker.Item label="Female" value="Female" />
+      <Picker.Item label="Other" value="Other" />
+    </Picker>
+  </View>
+)}
+
 
             <Text style={styles.label}>Race</Text>
             <TextInput placeholder="Race" value={race} onChangeText={setRace} style={styles.input} />
